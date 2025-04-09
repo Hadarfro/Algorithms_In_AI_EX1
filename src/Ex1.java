@@ -3,8 +3,7 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 
 public class Ex1 {
@@ -40,18 +39,30 @@ public class Ex1 {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
 
     private static Result processQuery(String query, BayesianNetwork network) {
         if (query.contains("|")) {
-            // Conditional probability query with algorithm
-            String[] parts = query.split(",");
-            int algorithm = Integer.parseInt(parts[1]);
-            String conditionalQuery = parts[0];
+            // Split on the last comma to correctly handle conditional queries
+            int lastCommaIndex = query.lastIndexOf(",");
 
-            return network.conditionalProbability(conditionalQuery, algorithm);
-        }
-        else {
+            if (lastCommaIndex == -1) {
+                throw new IllegalArgumentException("Invalid query format: " + query);
+            }
+
+            // Extract parts correctly
+            String conditionalQuery = query.substring(0, lastCommaIndex);
+            String algorithmString = query.substring(lastCommaIndex + 1).trim();
+
+
+            try {
+                int algorithm = Integer.parseInt(algorithmString);
+                return network.conditionalProbability(conditionalQuery, algorithm);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Algorithm must be a valid integer: " + algorithmString);
+            }
+        } else {
             // Joint probability query
             return network.jointProbability(query);
         }
